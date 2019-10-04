@@ -36,15 +36,22 @@ class autossh::install {
   ## If the target user account doesn't exist, create it...
   if ! defined(User[$user]) {
     user { $user:
-      managehome => true,
+      managehome => false,
       system     => true,
-      shell      => '/bin/bash',
+      shell      => '/bin/false',
     }
+  }
+
+  file { "/home/${user}":
+    ensure => 'directory',
+    owner  => 'root',
+    group  => $user,
+    mode   => '0750'
   }
 
   file { "/home/${user}/.ssh":
     ensure => directory,
-    owner  => $user,
+    owner  => root,
     group  => $user,
     mode   => '0750'
   }
@@ -95,13 +102,21 @@ class autossh::install {
     }
   }
 
+  ## Make sure known_hosts is writable
+  file { "/home/${user}/.ssh/known_hosts":
+    ensure => 'present',
+    owner  => $user,
+    group  => $user,
+    mode   => '0640'
+  }
+
   ##
   ## ssh config file
   ##
   concat {"/home/${user}/.ssh/config":
-    owner => $user,
+    owner => root,
     group => $user,
-    mode  => '0600',
+    mode  => '0640',
   }
 
   ##

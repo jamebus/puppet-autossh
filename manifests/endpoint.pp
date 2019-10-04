@@ -35,9 +35,9 @@ define autossh::endpoint(
 )
 {
   concat { "/home/${user}/.ssh/authorized_keys":
-    owner => $user,
+    owner => root,
     group => $user,
-    mode  => '0600',
+    mode  => '0640',
   }
   Autossh::Tunnel_endpoint <<| host == $host |>>
 }
