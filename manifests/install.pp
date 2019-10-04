@@ -49,16 +49,6 @@ class autossh::install {
     mode   => '0750'
   }
 
-  if !defined(File['auto_ssh_conf_dir']) {
-    file{'auto_ssh_conf_dir':
-      ensure => directory,
-      path   => '/etc/autossh',
-      mode   => '0755',
-      owner  => 'root',
-      group  => 'root',
-    }
-  }
-
   case $::osfamily {
     /RedHat/: {
 

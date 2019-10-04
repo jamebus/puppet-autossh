@@ -88,25 +88,6 @@ define autossh::tunnel(
     'forward' => "-M ${monitor_port} -N -T -o \'ServerAliveInterval ${server_alive_interval}\' -o \'ServerAliveCountMax ${server_alive_count_max}\' -L"
   }
 
-  file{"autossh-${tun_name}_conf":
-    ensure  => 'present',
-    path    => "/etc/autossh/autossh-${tun_name}.conf",
-    mode    => '0660',
-    owner   => $user,
-    group   => $user,
-    content => template('autossh/autossh.conf.erb'),
-  }
-  if ($tunnel_type == 'forward') {
-    file {"/home/${user}/.ssh/id_rsa_${tun_name}":
-      ensure  => file,
-      owner   => $user,
-      group   => $user,
-      mode    => "0600",
-      content => $pubkey,
-      replace => no,
-    }
-  }
-
   #
   # User sysV or systemd init depending on the OS
   #
@@ -123,6 +104,9 @@ define autossh::tunnel(
             content => template('autossh/autossh.init.sysv.erb'),
             notify  => Service["autossh-${tun_name}"],
           }
+
+          $conf_dir_ensure  = 'directory'
+          $conf_file_ensure = 'present'
         } # case rhel 5|6
 
         /7/: {
@@ -135,6 +119,9 @@ define autossh::tunnel(
             content => template('autossh/autossh.service.erb'),
             notify  => Service["autossh-${tun_name}"],
           }
+
+          $conf_dir_ensure  = 'absent'
+          $conf_file_ensure = 'absent'
         }
 
         default: {
@@ -152,6 +139,9 @@ define autossh::tunnel(
         content => template('autossh/autossh.service.erb'),
         notify  => Service["autossh-${tun_name}"],
       }
+
+      $conf_dir_ensure  = 'absent'
+      $conf_file_ensure = 'absent'
     } # case Debian
 
     default: {
@@ -162,6 +152,38 @@ define autossh::tunnel(
     ensure  =>  $enable,
     enable  =>  $enable,
     require => Package['autossh']
+  }
+
+  if !defined(File['auto_ssh_conf_dir']) {
+    file{'auto_ssh_conf_dir':
+      ensure => $conf_dir_ensure,
+      force  => true,
+      path   => '/etc/autossh',
+      mode   => '0755',
+      owner  => 'root',
+      group  => 'root',
+    }
+  }
+
+  file{"autossh-${tun_name}_conf":
+    ensure  => $conf_file_ensure,
+    path    => "/etc/autossh/autossh-${tun_name}.conf",
+    mode    => '0660',
+    owner   => $user,
+    group   => $user,
+    content => template('autossh/autossh.conf.erb'),
+    notify  => Service["autossh-${tun_name}"],
+  }
+
+  if ($tunnel_type == 'forward') {
+    file {"/home/${user}/.ssh/id_rsa_${tun_name}":
+      ensure  => file,
+      owner   => $user,
+      group   => $user,
+      mode    => '0600',
+      content => $pubkey,
+      replace => no,
+    }
   }
 
   ## Define remote endpoints
