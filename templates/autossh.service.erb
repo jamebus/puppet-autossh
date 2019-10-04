@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 User=<%= @user %>
-ExecStart=/usr/bin/autossh <%= @tunnel_args %> <%= @bind %>:<%= @port %>:<%= @forward_host %>:<%= @hostport %> -p <%= @remote_ssh_port %> -i /home/<%= @user %>/.ssh/id_rsa_<%= @tun_name %> <%= @remote_ssh_user %>@<%= @remote_ssh_host %>
+ExecStart=/usr/bin/autossh <%= @tunnel_args %> <%= @bind %>:<%= @port %>:<%= @forward_host %>:<%= @hostport %> -p <%= @remote_ssh_port %> -i /home/<%= @user %>/.ssh/<%= @tun_name %> <%= @remote_ssh_user %>@<%= @remote_ssh_host %>
 
 [Install]
 WantedBy=multi-user.target

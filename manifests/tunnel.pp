@@ -176,7 +176,7 @@ define autossh::tunnel(
   }
 
   if ($tunnel_type == 'forward') {
-    file {"/home/${user}/.ssh/id_rsa_${tun_name}":
+    file {"/home/${user}/.ssh/${tun_name}":
       ensure  => file,
       owner   => $user,
       group   => $user,
