@@ -49,6 +49,7 @@ class autossh(
   $autossh_version = $autossh::params::autossh_version,
   $autossh_build   = $autossh::params::autossh_build,
   $autossh_package = $autossh::params::autossh_package,
+  $home_path       = $autossh::params::home_path,
   $init_template   = $autossh::params::init_template,
   $enable          = $autossh::params::enable,
   $ssh_reuse_established_connections =

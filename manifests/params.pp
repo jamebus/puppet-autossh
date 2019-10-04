@@ -45,6 +45,7 @@ class autossh::params {
   $autossh_version = '1.4e'
   $autossh_build    = 1
   $user             = 'autossh'
+  $home_path        = '/var/lib/autossh'
   $enable           = true
   $pubkey           = ''
   $tunnel_type      = 'forward'

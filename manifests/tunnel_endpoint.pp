@@ -40,13 +40,14 @@ define autossh::tunnel_endpoint(
   $port,
   $host,
   $monitor_port = $autossh::params::monitor_port,
-  $pubkey = $autossh::params::pubkey,
-  $enable = $autossh::params::enable,
-  $user   = $autossh::params::user,
+  $pubkey       = $autossh::params::pubkey,
+  $enable       = $autossh::params::enable,
+  $user         = $autossh::params::user,
+  $home_path    = $autossh::home_path
 )
 {
   concat::fragment{"${::hostname}_autossh_${user}_authkey_${host}_${port}":
-    target  => "/home/${user}/.ssh/authorized_keys",
+    target  => "${home_path}/${user}/.ssh/authorized_keys",
     content => template('autossh/endpoint.erb'),
     order   => 10,
     tag     => "authkey_fragment_${user}_${host}",

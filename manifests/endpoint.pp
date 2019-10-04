@@ -31,10 +31,11 @@
 # Copyright 2014 Jason Ball.
 define autossh::endpoint(
   $host,
-  $user = $autossh::user,
+  $user      = $autossh::user,
+  $home_path = $autossh::home_path
 )
 {
-  concat { "/home/${user}/.ssh/authorized_keys":
+  concat { "${home_path}/${user}/.ssh/authorized_keys":
     owner => root,
     group => $user,
     mode  => '0640',

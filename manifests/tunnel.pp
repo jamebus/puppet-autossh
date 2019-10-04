@@ -9,6 +9,7 @@
 # === Parameters
 #
 # $user:            The user account to use to run the ssh tunnel
+# $home_path:       Path to create the user under
 # $tunnel_type:     The tunnel direction. (forward --> local port to
 #                   remote port, backward = remote port --> local port)
 # $port:            The local port to be used for the tunnel.
@@ -67,6 +68,7 @@ define autossh::tunnel(
   $bind             = $autossh::params::bind,
   $forward_host     = $autossh::params::forward_host,
   $user             = $autossh::params::user,
+  $home_path        = $autossh::params::home_path,
   $tunnel_type      = $autossh::params::tunnel_type,
   $remote_ssh_port  = $autossh::params::remote_ssh_port,
   $monitor_port     = $autossh::params::monitor_port,
@@ -176,7 +178,7 @@ define autossh::tunnel(
   }
 
   if ($tunnel_type == 'forward') {
-    file {"/home/${user}/.ssh/${tun_name}":
+    file {"${home_path}/${user}/.ssh/${tun_name}":
       ensure  => file,
       owner   => $user,
       group   => $user,
@@ -205,7 +207,7 @@ define autossh::tunnel(
     if ! defined(Concat::Fragment["home_${user}_ssh_config_${remote_ssh_host}"])
     {
       concat::fragment { "home_${user}_ssh_config_${remote_ssh_host}":
-        target  => "/home/${user}/.ssh/config",
+        target  => "${home_path}/${user}/.ssh/config",
         content => template('autossh/config.erb'),
         order   => 1,
       }

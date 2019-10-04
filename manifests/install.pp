@@ -22,36 +22,45 @@
 # Copyright 2014 Jason Ball.
 #
 class autossh::install {
-  $user                   = $autossh::user
-  $autossh_package        = $autossh::autossh_package
+  $user                      = $autossh::user
+  $home_path                 = $autossh::home_path
+  $autossh_package           = $autossh::autossh_package
   $ssh_reuse_established_connections =
     $autossh::ssh_reuse_established_connections
-  $ssh_enable_compression = $autossh::ssh_enable_compression
-  $ssh_ciphers            = $autossh::ssh_ciphers
+  $ssh_enable_compression    = $autossh::ssh_enable_compression
+  $ssh_ciphers               = $autossh::ssh_ciphers
   $ssh_stricthostkeychecking = $autossh::ssh_stricthostkeychecking
-  $ssh_tcpkeepalives = $autossh::ssh_tcpkeepalives
-  $server_alive_interval = $autossh::server_alive_interval
-  $server_alive_count_max = $autossh::server_alive_count_max
+  $ssh_tcpkeepalives         = $autossh::ssh_tcpkeepalives
+  $server_alive_interval     = $autossh::server_alive_interval
+  $server_alive_count_max    = $autossh::server_alive_count_max
 
-  ## If the target user account doesn't exist, create it...
-  if ! defined(User[$user]) {
-    user { $user:
-      managehome => false,
-      system     => true,
-      shell      => '/bin/false',
+  unless defined(File[$home_path]) {
+    file { $home_path:
+      ensure => 'directory',
+      owner  => 'root',
+      group  => 'root',
+      mode   => '0755'
     }
   }
 
-  file { "/home/${user}":
+  user { $user:
+    managehome => false,
+    home       => "${home_path}/${user}",
+    comment    => 'autossh',
+    system     => true,
+    shell      => '/bin/false'
+  }
+
+  file { "${home_path}/${user}":
     ensure => 'directory',
     owner  => 'root',
     group  => $user,
     mode   => '0750'
   }
 
-  file { "/home/${user}/.ssh":
-    ensure => directory,
-    owner  => root,
+  file { "${home_path}/${user}/.ssh":
+    ensure => 'directory',
+    owner  => 'root',
     group  => $user,
     mode   => '0750'
   }
@@ -94,8 +103,8 @@ class autossh::install {
   ## Configure reuse of established connections.
   ## Nice but little known feature of ssh.
   if $ssh_reuse_established_connections {
-    file { "/home/${user}/.ssh/sockets":
-      ensure => directory,
+    file { "${home_path}/${user}/.ssh/sockets":
+      ensure => 'directory',
       owner  => $user,
       group  => $user,
       mode   => '0700'
@@ -103,7 +112,7 @@ class autossh::install {
   }
 
   ## Make sure known_hosts is writable
-  file { "/home/${user}/.ssh/known_hosts":
+  file { "${home_path}/${user}/.ssh/known_hosts":
     ensure => 'present',
     owner  => $user,
     group  => $user,
@@ -113,8 +122,8 @@ class autossh::install {
   ##
   ## ssh config file
   ##
-  concat {"/home/${user}/.ssh/config":
-    owner => root,
+  concat {"${home_path}/${user}/.ssh/config":
+    owner => 'root',
     group => $user,
     mode  => '0640',
   }
@@ -124,7 +133,7 @@ class autossh::install {
   ##
   $remote_ssh_host = '*'
   concat::fragment { "home_${user}_ssh_config_global":
-    target  => "/home/${user}/.ssh/config",
+    target  => "${home_path}/${user}/.ssh/config",
     content => template('autossh/config.erb'),
     order   => 10,
   }
