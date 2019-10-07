@@ -90,6 +90,12 @@ define autossh::tunnel(
     'forward' => "-M ${monitor_port} -N -T -o \'ServerAliveInterval ${server_alive_interval}\' -o \'ServerAliveCountMax ${server_alive_count_max}\' -L"
   }
 
+  exec { 'systemctl-daemon-reload':
+    command     => 'systemctl daemon-reload',
+    refreshonly => true,
+    path        => ['/sbin', '/bin', '/usr/sbin', '/usr/bin'],
+  }
+
   #
   # User sysV or systemd init depending on the OS
   #
@@ -119,7 +125,8 @@ define autossh::tunnel(
             owner   => 'root',
             group   => 'root',
             content => template('autossh/autossh.service.erb'),
-            notify  => Service["autossh-${tun_name}"],
+            notify  => [ Exec['systemctl-daemon-reload'],
+                         Service["autossh-${tun_name}"] ]
           }
 
           $conf_dir_ensure  = 'absent'
@@ -139,7 +146,8 @@ define autossh::tunnel(
         owner   => 'root',
         group   => 'root',
         content => template('autossh/autossh.service.erb'),
-        notify  => Service["autossh-${tun_name}"],
+        notify  => [ Exec['systemctl-daemon-reload'],
+                     Service["autossh-${tun_name}"] ]
       }
 
       $conf_dir_ensure  = 'absent'
