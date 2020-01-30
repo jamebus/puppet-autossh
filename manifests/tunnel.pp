@@ -90,10 +90,12 @@ define autossh::tunnel(
     'forward' => "-M ${monitor_port} -N -T -o \'ServerAliveInterval ${server_alive_interval}\' -o \'ServerAliveCountMax ${server_alive_count_max}\' -L"
   }
 
-  exec { 'systemctl-daemon-reload':
-    command     => 'systemctl daemon-reload',
-    refreshonly => true,
-    path        => ['/sbin', '/bin', '/usr/sbin', '/usr/bin'],
+  if !defined(Exec['systemctl-daemon-reload']) {
+    exec { 'systemctl-daemon-reload':
+      command     => 'systemctl daemon-reload',
+      refreshonly => true,
+      path        => ['/sbin', '/bin', '/usr/sbin', '/usr/bin'],
+    }
   }
 
   #
